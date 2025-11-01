@@ -106,6 +106,10 @@ class Legendre(FunctionSpace):
             return sp.legendre(j, x)
         return Leg.basis(j)
 
+    @property
+    def reference_domain(self):
+        return (-1, 1)
+
     def derivative_basis_function(self, j, k=1):
         return self.basis_function(j).deriv(k)
 
@@ -129,6 +133,10 @@ class Chebyshev(FunctionSpace):
         if sympy:
             return sp.cos(j * sp.acos(x))
         return Cheb.basis(j)
+
+    @property
+    def reference_domain(self):
+        return (-1, 1)
 
     def derivative_basis_function(self, j, k=1):
         raise NotImplementedError
