@@ -114,10 +114,12 @@ class Legendre(FunctionSpace):
         return self.basis_function(j).deriv(k)
 
     def L2_norm_sq(self, N):
-        raise NotImplementedError
+        return [2/(2 * n + 1) for n in range(N)]
 
     def mass_matrix(self):
-        raise NotImplementedError
+        return sparse.diags(
+            [self.L2_norm_sq(self.N + 1)], [0], (self.N + 1, self.N + 1), format="csr"
+        )
 
     def eval(self, uh, xj):
         xj = np.atleast_1d(xj)
@@ -403,6 +405,7 @@ def inner(u, v: TestFunction):
     V = v.function_space
     h = V.domain_factor
     if isinstance(u, TrialFunction):
+        # If u is a TrialFunction over the same space
         num_derivatives = u.num_derivatives + v.num_derivatives
         if num_derivatives == 0:
             return float(h) * V.mass_matrix()
