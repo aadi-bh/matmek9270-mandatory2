@@ -327,10 +327,19 @@ class DirichletLegendre(Composite, Legendre):
 
 class NeumannLegendre(Composite, Legendre):
     def __init__(self, N, domain=(-1, 1), bc=(0, 0), constraint=0):
-        raise NotImplementedError
+        Legendre.__init__(self, N, domain=domain)
+        self.B = Neumann(bc, domain, self.reference_domain)
+        S = sparse.diags((1, -1), (0, 2), shape=(N+1, N+3), format="csr")
+        S = S.toarray()
+        for j in range(N + 1):
+            assert S[j, j+2] == -1
+            S[j, j+2] = -1 * j * (j + 1) / ((j + 2) * (j + 3))
+        self.S = sparse.csr_matrix(S)
 
     def basis_function(self, j, sympy=False):
-        raise NotImplementedError
+        if sympy:
+            return sp.legendre(j, x) - j * (j + 1) / ((j + 2) * (j + 3)) * sp.legendre(j+2, x)
+        return Leg.basis(j) - j * (j + 1) / ((j + 2) * (j + 3)) * Leg.basis(j+2)
 
 
 class DirichletChebyshev(Composite, Chebyshev):
@@ -347,11 +356,19 @@ class DirichletChebyshev(Composite, Chebyshev):
 
 class NeumannChebyshev(Composite, Chebyshev):
     def __init__(self, N, domain=(-1, 1), bc=(0, 0), constraint=0):
-        raise NotImplementedError
+        Chebyshev.__init__(self, N, domain=domain)
+        self.B = Neumann(bc, domain, self.reference_domain)
+        S = sparse.diags((1, -1), (0, 2), shape=(N+1, N+3), format="csr")
+        S = S.toarray()
+        for j in range(N + 1):
+            assert S[j, j + 2] == -1
+            S[j, j+2] = -1 * j**2 / (j + 2)**2
+        self.S = sparse.csr_matrix(S)
 
     def basis_function(self, j, sympy=False):
-        raise NotImplementedError
-
+        if sympy:
+            return sp.cos(j * sp.acos(x)) - j**2 / (j + 2)**2 * sp.cos((j + 2) * sp.acos(x))
+        return Cheb.basis(j) - j**2 / (j + 2)**2 * Cheb.basis(j+2)
 
 class BasisFunction:
     def __init__(self, V, diff=0, argument=0):
