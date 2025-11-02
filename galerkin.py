@@ -141,7 +141,7 @@ class Chebyshev(FunctionSpace):
         return (-1, 1)
 
     def derivative_basis_function(self, j, k=1):
-        raise NotImplementedError
+        return self.basis_function(j).deriv(k)
 
     def weight(self, x=x):
         return 1 / sp.sqrt(1 - x**2)
