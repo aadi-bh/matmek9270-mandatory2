@@ -114,7 +114,7 @@ class Legendre(FunctionSpace):
         return self.basis_function(j).deriv(k)
 
     def L2_norm_sq(self, N):
-        return [2/(2 * n + 1) for n in range(N)]
+        return 2/(2 * np.arange(N) + 1)
 
     def mass_matrix(self):
         return sparse.diags(
@@ -147,13 +147,19 @@ class Chebyshev(FunctionSpace):
         return 1 / sp.sqrt(1 - x**2)
 
     def L2_norm_sq(self, N):
-        raise NotImplementedError
+        L = np.pi / 2 * np.ones(N)
+        L[0] = np.pi
+        return L
 
     def mass_matrix(self):
-        raise NotImplementedError
+        return sparse.diags(
+            [self.L2_norm_sq(self.N + 1)], [0], (self.N + 1, self.N + 1), format="csr"
+        )
 
     def eval(self, uh, xj):
-        raise NotImplementedError
+        xj = np.atleast_1d(xj)
+        Xj = map_reference_domain(xj, self.domain, self.reference_domain)
+        return np.polynomial.chebyshev.chebval(Xj, uh)
 
     def inner_product(self, u):
         us = map_expression_true_domain(u, x, self.domain, self.reference_domain)
